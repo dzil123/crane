@@ -2,11 +2,19 @@ package main
 
 /*
 #include <stdlib.h>
+
+struct ImageMetadataReturn {
+	char *error;
+	char *config;
+	char *digest;
+	char *manifest;
+};
 */
 import "C"
 import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1"
 	"unsafe"
 )
@@ -25,24 +33,70 @@ func makeOption(user string, password string) crane.Option {
 	}
 }
 
-//export ImageInspect
-func ImageInspect(image_cstr *C.char, user_cstr *C.char, password_cstr *C.char) (bool, *C.char) {
+// nginx -> index.docker.io/library/nginx@sha256:48a84a0728cab8ac558f48796f901f6d31d287101bc8b317683678125e0d2d35
+func getDigest(image string, option crane.Option) (string, error) {
+	digest, err := crane.Digest(image, option)
+	if err != nil {
+		return "", err
+	}
+
+	ref, err := name.ParseReference(image)
+	if err != nil {
+		return "", err
+	}
+
+	ret := ref.Context().Digest(digest).String()
+	return ret, nil
+}
+
+//export ImageMetadata
+func ImageMetadata(image_cstr *C.char, user_cstr *C.char, password_cstr *C.char) C.struct_ImageMetadataReturn {
 	image := C.GoString(image_cstr)
 	user := C.GoString(user_cstr)
 	password := C.GoString(password_cstr)
 
 	option := makeOption(user, password)
-	json, err := crane.Config(image, option)
 
+
+	ret := C.struct_ImageMetadataReturn {}
+
+	digest, err := getDigest(image, option)
 	if err != nil {
-		return true, C.CString(err.Error())
+		ret.error = C.CString(err.Error())
+		return ret
 	}
-	return false, C.CString(string(json))
+	ret.digest = C.CString(digest)
+
+	config, err := crane.Config(digest, option)
+	if err != nil {
+		ret.error = C.CString(err.Error())
+		return ret
+	}
+	ret.config = C.CString(string(config))
+
+	manifest, err := crane.Manifest(digest, option)
+	if err != nil {
+		ret.error = C.CString(err.Error())
+		return ret
+	}
+	ret.manifest = C.CString(string(manifest))
+
+
+	return ret
 }
 
-//export GoFree
-func GoFree(ptr *C.char) {
-	C.free(unsafe.Pointer(ptr))
+//export FreeImageMetadataReturn
+func FreeImageMetadataReturn(ret C.struct_ImageMetadataReturn) {
+	freeStr(ret.error);
+	freeStr(ret.config);
+	freeStr(ret.manifest);
+	freeStr(ret.digest);
+}
+
+func freeStr(ptr *C.char) {
+	if ptr != nil {
+		C.free(unsafe.Pointer(ptr))
+	}
 }
 
 func main() {}

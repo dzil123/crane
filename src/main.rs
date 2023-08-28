@@ -1,5 +1,5 @@
-use crane::image_inspect;
+use crane::image_metadata;
 
 fn main() {
-    dbg!(image_inspect("nginx", None));
+    println!("{:#?}", image_metadata("nginx", None).unwrap());
 }
