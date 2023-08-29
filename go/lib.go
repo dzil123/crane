@@ -57,8 +57,7 @@ func ImageMetadata(image_cstr *C.char, user_cstr *C.char, password_cstr *C.char)
 
 	option := makeOption(user, password)
 
-
-	ret := C.struct_ImageMetadataReturn {}
+	ret := C.struct_ImageMetadataReturn{}
 
 	digest, err := getDigest(image, option)
 	if err != nil {
@@ -81,16 +80,15 @@ func ImageMetadata(image_cstr *C.char, user_cstr *C.char, password_cstr *C.char)
 	}
 	ret.manifest = C.CString(string(manifest))
 
-
 	return ret
 }
 
 //export FreeImageMetadataReturn
 func FreeImageMetadataReturn(ret C.struct_ImageMetadataReturn) {
-	freeStr(ret.error);
-	freeStr(ret.config);
-	freeStr(ret.manifest);
-	freeStr(ret.digest);
+	freeStr(ret.error)
+	freeStr(ret.config)
+	freeStr(ret.manifest)
+	freeStr(ret.digest)
 }
 
 func freeStr(ptr *C.char) {
