@@ -23,7 +23,7 @@ import (
 //export GetBuildInfo
 func GetBuildInfo() *C.char {
 	buildinfo, ok := debug.ReadBuildInfo()
-	var buildinfostr = ""
+	buildinfostr := ""
 	if ok {
 		buildinfostr = buildinfo.String()
 	}

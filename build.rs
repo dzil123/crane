@@ -14,6 +14,7 @@ fn main() {
         .current_dir("./go")
         .arg("build")
         .arg("-buildmode=c-archive")
+        .arg("-trimpath")
         .arg("-o")
         .arg(out_path.join("libgo.a"))
         .arg(".");
@@ -26,6 +27,10 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header(out_path.join("libgo.h").to_str().unwrap())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .allowlist_function("GetBuildInfo")
+        .allowlist_function("ImageMetadata")
+        .allowlist_function("FreeImageMetadataReturn")
+        .allowlist_function("FreeStr")
         .generate()
         .expect("Unable to generate bindings");
 
