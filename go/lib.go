@@ -23,10 +23,8 @@ import (
 //export GetBuildInfo
 func GetBuildInfo() *C.char {
 	buildinfo, ok := debug.ReadBuildInfo()
-	var buildinfostr string
-	if !ok {
-		buildinfostr = "debug.ReadBuildInfo() failed"
-	} else {
+	var buildinfostr = ""
+	if ok {
 		buildinfostr = buildinfo.String()
 	}
 
