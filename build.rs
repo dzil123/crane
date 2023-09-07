@@ -12,6 +12,9 @@ fn main() {
     let mut go_build = Command::new("go");
     go_build
         .current_dir("./go")
+        .env("CGO_ENABLED", "1")
+        .env("GOOS", "linux")
+        .env("GOARCH", "amd64")
         .arg("build")
         .arg("-buildmode=c-archive")
         .arg("-trimpath")
