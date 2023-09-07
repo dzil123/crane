@@ -16,8 +16,22 @@ import (
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1"
+	"runtime/debug"
 	"unsafe"
 )
+
+//export GetBuildInfo
+func GetBuildInfo() *C.char {
+	buildinfo, ok := debug.ReadBuildInfo()
+	var buildinfostr string
+	if !ok {
+		buildinfostr = "debug.ReadBuildInfo() failed"
+	} else {
+		buildinfostr = buildinfo.String()
+	}
+
+	return C.CString(buildinfostr)
+}
 
 func makeOption(user string, password string) crane.Option {
 	return func(opts *crane.Options) {
@@ -85,13 +99,14 @@ func ImageMetadata(image_cstr *C.char, user_cstr *C.char, password_cstr *C.char)
 
 //export FreeImageMetadataReturn
 func FreeImageMetadataReturn(ret C.struct_ImageMetadataReturn) {
-	freeStr(ret.error)
-	freeStr(ret.config)
-	freeStr(ret.manifest)
-	freeStr(ret.digest)
+	FreeStr(ret.error)
+	FreeStr(ret.config)
+	FreeStr(ret.manifest)
+	FreeStr(ret.digest)
 }
 
-func freeStr(ptr *C.char) {
+//export FreeStr
+func FreeStr(ptr *C.char) {
 	if ptr != nil {
 		C.free(unsafe.Pointer(ptr))
 	}

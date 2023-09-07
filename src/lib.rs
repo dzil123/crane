@@ -1,4 +1,5 @@
 use std::ffi::{c_char, CStr, CString};
+use std::sync::OnceLock;
 
 mod ffi;
 
@@ -13,6 +14,17 @@ unsafe fn to_string(cstr: *mut std::os::raw::c_char) -> String {
 
     let cstr = unsafe { CStr::from_ptr(cstr) };
     String::from_utf8_lossy(cstr.to_bytes()).to_string()
+}
+
+pub fn get_buildinfo() -> &'static str {
+    static BUILD_INFO: OnceLock<String> = OnceLock::new();
+
+    BUILD_INFO.get_or_init(|| unsafe {
+        let cstr = ffi::GetBuildInfo();
+        let ret = to_string(cstr);
+        ffi::FreeStr(cstr);
+        ret
+    })
 }
 
 #[derive(Debug, Clone)]

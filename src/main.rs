@@ -1,5 +1,4 @@
-use crane::image_metadata;
-
 fn main() {
-    println!("{:#?}", image_metadata("nginx", None).unwrap());
+    println!("{}", crane::get_buildinfo());
+    println!("{:#?}", crane::image_metadata("nginx", None).unwrap());
 }
