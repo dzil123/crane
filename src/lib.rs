@@ -69,5 +69,5 @@ pub fn image_metadata(image: &str, creds: Option<(&str, &str)>) -> Result<ImageM
 
 #[test]
 fn test_buildinfo() {
-    assert!(!get_buildinfo().is_empty());
+    assert!(!get_buildinfo().trim().is_empty());
 }
